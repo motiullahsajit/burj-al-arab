@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { UserContext } from "../../App";
 import { useHistory, useLocation } from 'react-router';
 import { createUserWithEmailAndPassword, googleSingIn, initializeLoginFramework, signInWithEmailAndPassword, handleSignOut, facebookSingIn, } from './LoginManager';
-
+import firebase from "firebase/app";
 
 const Login = () => {
     initializeLoginFramework();
@@ -42,7 +42,6 @@ const Login = () => {
         })
     }
 
-
     const signIn = (e) => {
         e.preventDefault();
         signInWithEmailAndPassword(formData.email, formData.password).then(res => {
@@ -52,24 +51,33 @@ const Login = () => {
 
     const singOUt = (e) => {
         handleSignOut().then(res => {
-            handleResponse(res, false)
+            handleResponse(res)
         })
     }
 
     const handleGoogleSingIn = () => {
         googleSingIn().then(res => {
-            handleResponse(res, true)
+            handleResponse(res)
         })
     }
     const handleFbSingIn = () => {
         facebookSingIn().then(res => {
-            handleResponse(res, true)
+            handleResponse(res)
         })
     }
 
-    const handleResponse = (res, redirect) => {
+    const handleResponse = (res) => {
         setLoggedInUser(res)
-        redirect && history.replace(from);
+        storeAuthToken()
+    }
+
+    const storeAuthToken = () => {
+        firebase.auth().currentUser?.getIdToken(/*forceRefresh*/ true).then(function (idToken) {
+            sessionStorage.setItem('token', idToken);
+            history.replace(from);
+        }).catch(function (error) {
+
+        });
     }
 
 
